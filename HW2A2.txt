@@ -1,0 +1,194 @@
+.model small
+.stack 100h
+
+.data  
+count db 0h
+A db 20 dup  (?)
+SA  db 20 dup  (?)
+   
+
+.code 
+  mov ax, 1000h
+  mov ds,ax 
+  mov di,2000h 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;   
+   mov count ,0h 
+   lea Si,[a] 
+   mov cx, 20          ;;;; Cx=20
+   L_start:   
+   mov ah,1
+   int 21h
+   ;sub ax,30h  
+   mov  [SI],al
+   inc SI
+   loop L_start
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+    mov si , offset A
+    lea di, [SA]
+    mov cx, 20                    ;;;; Cx=20
+   
+ls: 
+    cmp cx ,0
+    jE RR
+    mov al,[si] 
+       
+     
+L0: 
+     cmp al,30h ;0               ; 0-9 digit 
+     jAE L9                      ;above >>> may be digit
+     inc si 
+     dec cx
+     jmp ls                      ;below >>> not digit nor letter 
+                            
+L9:
+     cmp al,39h  ;9              ;above >>> not digit
+     JBE is_digit                ;equl or below is digit
+     jmp LAC
+                               
+is_digit:                            
+                            
+    mov [di], al           
+    inc di
+    inc si
+    dec cx 
+    inc count
+    jmp ls
+    
+    
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;    
+
+    
+LAC: 
+     
+     cmp al,41h ;A               ; A-Z Capital alphabet 
+     jAE LZC                     ;above >>> may be alphabet 
+     inc si  
+     dec cx
+    
+     jmp ls 
+    
+
+LZC:
+     cmp al,5Ah ;Z               ;above >>> not alphabet
+     JBE is_alphabet             ;equl or below is alphabet
+     jmp Las 
+     
+is_alphabet:
+    mov [di], al           
+    inc di
+    inc si
+    dec cx 
+    inc count     
+    jmp ls 
+   
+          
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;            
+            
+Las: 
+    cmp al,61h ;a                 ; a-z small alphabet 
+     jAE Lzs                      ;above >>> may be alphabet 
+     inc si 
+     dec cx
+     
+     jmp ls 
+     
+     
+     
+Lzs:
+     cmp al,7Ah ;z                 ;above >>> not alphabet
+     JBE is_alphabet               ;equl or below is alphabet
+     
+
+
+         
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+RR:                                    ;;;;;; to print A array
+mov ah,2                               ;;;;;;   to print new line ;;;;;;;
+mov dl,0Ah
+int 21h
+mov dl,13
+int 21h
+ 
+ 
+mov cx,20                                 ;;;; Cx=20                     
+lea SI,A
+R_print:
+mov dL,[SI]
+inc SI 
+mov ah,2                                                     
+int 21h          
+   
+loop R_print
+ 
+       
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+mov ah,2                            ;;;;;; to print SA array    
+mov dl,0Ah                          ;;;;;;   to print new line ;;;;;;;
+int 21h
+mov dl,13
+int 21h
+
+ 
+                                        ;;cx lenght of SA
+mov cl,count                                                      
+lea DI,SA
+R_print2:
+mov dL,[DI]
+inc DI 
+mov ah,2                                                     
+int 21h          
+   
+loop R_print2
+ 
+ 
+ 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+call order
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+.EXIT
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; 
+order proc 
+mov DH,count
+     
+mov ch,DH
+lA:
+lea si,SA
+mov Dl,count 
+mov cl,Dl 
+lb:
+  mov al,[si]
+  mov ah,[si+1]
+  cmp al,ah
+  jc NoSwap
+  mov dl,[si+1]  
+  xchg [si],dl
+  mov [si+1], dl
+ NoSwap:
+    add si,1
+    dec cl
+    jnz lB 
+     dec ch
+     jnz lA  
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;    
+RA:
+mov ah,2                            ;;;;;; to print SA array after    
+mov dl,0Ah                          ;;;;;;   to print new line ;;;;;;;
+int 21h
+mov dl,13
+int 21h
+ 
+                                        ;;cx lenght of SA
+mov cl,count                                                      
+lea DI,SA
+R_printAfter: 
+mov dL,[DI]
+inc DI  
+mov ah,2                                                     
+int 21h          
+loop R_printAfter
+endp    
+ .EXIT     
